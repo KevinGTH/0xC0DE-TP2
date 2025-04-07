@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
     try:
         #Cargar libreria de C
-        gini_lib= ctypes.CDLL("./libgini.so")
+        gini_lib= ctypes.CDLL("../src/libgini.so")
 
         # Definir los tipos de los argumentos y del valor de retorno de la función C
         gini_lib.float_to_int_gini.argtypes = [ctypes.c_double]      #Argumento del programa
