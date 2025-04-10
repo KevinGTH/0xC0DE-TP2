@@ -30,40 +30,32 @@ class GiniAPIClient:
                 valid_countries_name.add(country_name)
         return target_country.lower() in valid_countries_name
 
-    def get_latest_gini(self, data, target_country):
-        # Inicializo las variables
-        latest_year = -1
-        latest_gini = None
-
-        for entry in data:
-            # Sacamos valor de país, fecha y gini de forma segura
-            country = entry.get('country', {}).get('value')
-            date_str = entry.get('date')
-            value = entry.get('value')
-
-            # En caso de existir, buscamos el pais seleccionado y obtenemos sus datos
-            if (not country or country.lower() != target_country.lower() or value is None):
-                continue
-
-            # Verificacion del tipo de dato obtenido
-            try:
-                year = int(date_str)
-                gini = float(value)
-            except (ValueError, TypeError):
-                # si date_str no es entero o value no es float
-                continue
-
-            # Actualizamos si encontramos un año más reciente
-            if year > latest_year:
-                latest_year = year
-                latest_gini = gini
-
-        if latest_gini is None:
-            return None, None
-
-        return latest_gini, latest_year
-
     def float_to_int_gini(self, gini_value):
-        """Convierte un valor GINI de float a int usando la función de C."""
+        #Convierte un valor float a int usando una funcion definida en C
         return self.gini_lib.float_to_int_gini(gini_value)
 
+    def get_available_years(self,data, target_country):
+        list_years = set()
+        for entry in data:
+            if entry.get('country',{}).get('value').lower() == target_country.lower():
+                list_years.add(entry.get('date'))
+        return sorted(list_years)
+
+    def get_gini(self, records, target_country, year_str):
+
+        for entry in records:
+            country = entry.get('country', {}).get('value', '').lower()
+            value = entry.get('value')
+            date_str = entry.get('date')
+
+            # Busca la coincidencia exacta de país y año (como string)
+            if country == target_country.lower() and date_str == year_str:
+                try:
+                    gini = float(value)
+                    return gini # Devuelve el valor GINI tan pronto como lo encuentra
+                except (ValueError, TypeError):
+                    print(f"Advertencia: Valor GINI no numérico encontrado para {target_country} año {year_str}: {value}")
+                    return None # O continuar buscando si podría haber duplicados (poco probable)
+
+        # Si el bucle termina sin encontrar una coincidencia
+        return None
