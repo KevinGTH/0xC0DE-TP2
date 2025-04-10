@@ -1,10 +1,17 @@
 import requests
-import tkinter as tk
-from tkinter import messagebox
+import ctypes
+
 
 class GiniAPIClient:
     def __init__(self, api_url):
         self.api_url = api_url
+        try:
+            self.gini_lib = ctypes.CDLL("./libgini.so")
+            self.gini_lib.float_to_int_gini.argtypes = [ctypes.c_double]
+            self.gini_lib.float_to_int_gini.restype = ctypes.c_int
+        except Exception as e:
+            print(f"Error al cargar la biblioteca: {e}")
+            exit(1)
 
     def fetch_data(self):
         response = requests.get(self.api_url)
@@ -13,7 +20,8 @@ class GiniAPIClient:
         else:
             return None
 
-    def country_validation(self, data, target_country):
+    @staticmethod
+    def country_validation(data, target_country):
         list_countries = data[1]
         valid_countries_name = set()  # Creo una lista con solo los nombres de los paises de la API
         for entry in list_countries:
@@ -22,50 +30,40 @@ class GiniAPIClient:
                 valid_countries_name.add(country_name)
         return target_country.lower() in valid_countries_name
 
-class GUI:
-    """Clase para manejar la interfaz gráfica con Tkinter."""
-    def __init__(self, api_client, calculator):
-        self.api_client = api_client
-        self.calculator = calculator
-        self.root = tk.Tk()
-        self.root.title("Índice GINI")
-        self.root.geometry("400x300")
-        self.elementos_interfaz()
+    def get_latest_gini(self, data, target_country):
+        # Inicializo las variables
+        latest_year = -1
+        latest_gini = None
 
-    def elementos_interfaz(self):
-        self.label = tk.Label(self.root, text="Introduce el País:")
-        self.label.pack(pady=10)
+        for entry in data:
+            # Sacamos valor de país, fecha y gini de forma segura
+            country = entry.get('country', {}).get('value')
+            date_str = entry.get('date')
+            value = entry.get('value')
 
-        self.entry = tk.Entry(self.root, width=30)
-        self.entry.pack(pady=25)
+            # En caso de existir, buscamos el pais seleccionado y obtenemos sus datos
+            if (not country or country.lower() != target_country.lower() or value is None):
+                continue
 
-        self.button = tk.Button(self.root, text="Buscar", command=self.search)
-        self.button.pack(pady=10)
+            # Verificacion del tipo de dato obtenido
+            try:
+                year = int(date_str)
+                gini = float(value)
+            except (ValueError, TypeError):
+                # si date_str no es entero o value no es float
+                continue
 
-        self.result_label = tk.Label(self.root, text="", wraplength=350, justify="left")
-        self.result_label.pack(pady=10)
+            # Actualizamos si encontramos un año más reciente
+            if year > latest_year:
+                latest_year = year
+                latest_gini = gini
 
-    def search(self):
-        """Busca y muestra el índice GINI del país ingresado."""
-        target_country = self.entry.get().strip()
-        data = self.api_client.fetch_data()
+        if latest_gini is None:
+            return None, None
 
-        if data is None:
-            messagebox.showerror("Error", "No se pudieron obtener los datos de la API.")
-            return
+        return latest_gini, latest_year
 
-        if self.api_client.country_validation(data,target_country):
-            latest_gini, latest_year = self.calculator.get_latest_gini(data[1], target_country)
-            if latest_gini is None:
-                self.result_label.config(text=f"No hay datos GINI para {target_country} en el rango solicitado.")
-            else:
-                int_gini = self.calculator.float_to_int_gini(latest_gini)
-                self.result_label.config(
-                    text=f"El índice GINI de {target_country} en {latest_year} es: {latest_gini:.2f}\n"
-                         f"Valor entero: {int_gini}"
-                )
-        else:
-            self.result_label.config(text=f"Error: El país '{target_country}' no se encontró en los datos de la API.")
+    def float_to_int_gini(self, gini_value):
+        """Convierte un valor GINI de float a int usando la función de C."""
+        return self.gini_lib.float_to_int_gini(gini_value)
 
-    def run(self):
-        self.root.mainloop()
