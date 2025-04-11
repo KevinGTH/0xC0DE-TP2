@@ -20,6 +20,11 @@ class GiniAPIClient:
         else:
             return None
 
+
+    def float_to_int_gini(self, gini_value):
+        #Convierte un valor float a int usando una funcion definida en C
+        return self.gini_lib.float_to_int_gini(gini_value)
+
     @staticmethod
     def country_validation(data, target_country):
         list_countries = data[1]
@@ -30,32 +35,30 @@ class GiniAPIClient:
                 valid_countries_name.add(country_name)
         return target_country.lower() in valid_countries_name
 
-    def float_to_int_gini(self, gini_value):
-        #Convierte un valor float a int usando una funcion definida en C
-        return self.gini_lib.float_to_int_gini(gini_value)
-
-    def get_available_years(self,data, target_country):
+    @staticmethod
+    def get_available_years(data, target_country):
         list_years = set()
         for entry in data:
             if entry.get('country',{}).get('value').lower() == target_country.lower():
                 list_years.add(entry.get('date'))
         return sorted(list_years)
 
-    def get_gini(self, records, target_country, year_str):
+    @staticmethod
+    def get_gini(data_api, target_country, year_str):
 
-        for entry in records:
+        for entry in data_api:
             country = entry.get('country', {}).get('value', '').lower()
             value = entry.get('value')
             date_str = entry.get('date')
 
-            # Busca la coincidencia exacta de país y año (como string)
+            # Busca la coincidencia exacta de país y año
             if country == target_country.lower() and date_str == year_str:
                 try:
                     gini = float(value)
-                    return gini # Devuelve el valor GINI tan pronto como lo encuentra
+                    return gini
                 except (ValueError, TypeError):
-                    print(f"Advertencia: Valor GINI no numérico encontrado para {target_country} año {year_str}: {value}")
-                    return None # O continuar buscando si podría haber duplicados (poco probable)
+                    print(f"Warning: Valor GINI no numérico encontrado para {target_country} año {year_str}: {value}")
+                    return None
 
-        # Si el bucle termina sin encontrar una coincidencia
+        # Si algo salio mal
         return None
