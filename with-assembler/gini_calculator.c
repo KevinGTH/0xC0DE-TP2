@@ -12,3 +12,10 @@ int float_to_int_gini(double gini_float) {
     // Devolver el resultado obtenido de ensamblador (que estaba en EAX)
     return result_from_asm;
 }
+
+int main() {
+    float num = 7.27;
+    int num_int = asm_process_gini(num);
+    printf("The integer value of %f is %d\n", num, num_int);
+    return 0;
+}

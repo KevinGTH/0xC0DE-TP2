@@ -10,11 +10,11 @@ asm_process_gini:
     mov ebp, esp      ; Establecer el nuevo puntero base
     sub esp, 4        ; Reservar 4 bytes en la pila para el entero temporal [ebp-4]
 
-    fld qword [ebp+8]   ; Carga el double de 8 bytes en ST(0)
+    fld qword [ebp+8]   ; Cargo el numero flotante pasado por parametro en el tope de la pila
 
-    fistp dword [ebp-4] ;
+    fistp dword [ebp-4] ;Saco el valor tope de la pila convirtiendolo  a entero en la MEMORIA
 
     mov eax, [ebp-4]
     inc eax             ; eax = eax + 1
-    leave
+    leave       ;esto reemplaza las instrucciones: 1)mov esp,ebp 2)pop ebp
     ret
