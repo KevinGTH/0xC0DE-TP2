@@ -31,7 +31,7 @@ Para poder depurar el proyecto y poder observar el estado de la pila, debemos ha
 ``` 
 nasm -f elf32 -g -F dwarf gini_processor.asm
 gcc -g -o gini gini_calculator.c gini_processor.o -m32
-gdb ./gini
+gdb --q ./gini
 ```
 
 Luego de esto, se debe poner un breakpoint en la linea en la que se llama a la función de assembler.
@@ -91,11 +91,11 @@ Podemos observar claramente que ahora los registros cambiaron de valor y en espe
 
 Luego avanzamos en la ejecución al momento de salir de la función de assembler y verificamos nuevamente los registros, sabemos que el valor de EBP debe volver a ser el de antes de llamar a la funcion de assembler.
 
-![registros al volver de assembler](images/07.png)
+![registros al volver de assembler](images/05.png)
 
 Para finalizar sabemos que el codigo realizado en C debido al compilador se crea en assembler, y gracias a un comando del GDB podemos observar el programa de C convertido a Assembler.
 
-![codigo assembler 0](images/08.png)
+![codigo assembler 0](images/07.png)
 
-![codigo assembler 0](images/09.png)
+![codigo assembler 0](images/08.png)
 
