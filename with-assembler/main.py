@@ -21,7 +21,7 @@ if __name__ == '__main__':
     print("\nIntroduce el Pais: ")
     target_country=input()
 
-    if (gini_utils.country_validation(data, target_country)):
+    if (server_interface.country_validation(data, target_country)):
         print(f"\nPaís '{target_country}' encontrado. Buscando índice GINI...")
 
         latest_gini, latest_year = gini_utils.get_latest_gini(data[1], target_country)
