@@ -7,7 +7,7 @@ class MyServer(Server32):
 
     def __init__(self, host, port, **kwargs):
         # Load the 'libgini32' shared-library file using ctypes.CDLL
-        super(MyServer, self).__init__('libgini32.so', 'cdll', host, port)
+        super(MyServer, self).__init__('libgini.so', 'cdll', host, port)
 
         # The Server32 class has a 'lib' property that is a reference to the ctypes.CDLL object
 
