@@ -28,7 +28,7 @@ Para solucionar esto, agregamos la libreria de msl-loadlib con la cual podemos c
 ------------------------
 Para poder depurar el proyecto y poder observar el estado de la pila, debemos hacer lo siguiente:
 
-``` 
+```console
 nasm -f elf32 -g -F dwarf gini_processor.asm
 gcc -g -o gini gini_calculator.c gini_processor.o -m32
 gdb --q ./gini
@@ -59,7 +59,7 @@ x/20wx $ebp
 
 Despues podemos ver el stack frame que se está ejecutando:
 
-``` bash
+``` 
 bt
 ```
 Como estamos ejecutando esto antes de llamar a la funcion, solo veremos en el stack a main.
@@ -98,4 +98,31 @@ Para finalizar sabemos que el codigo realizado en C debido al compilador se crea
 ![codigo assembler 0](images/07.png)
 
 ![codigo assembler 0](images/08.png)
+
+
+-----------------
+Agregamos para comparar los rendimientos de la funcion creada con C y otra funcion que hace lo mismo en Assembler. Utilizamos la herramienta perf que es un perfilador que funciona por **inyeccion de codigo**
+, esto significa que el programa se ejecuta en un modo especial donde se generan interrupciones del sistema registrando y verificando la funcion o metodo que se este ejecutando actualmente
+
+Para realizar esto tenemos que ejecutar el siguiente comando:
+
+```console
+sudo perf stat python3 perf.py python
+sudo perf stat python3 perf.py c
+```
+
+Esto nos muestra lo siguiente, primero verificamos los tiempos de simulacion de la funcion de python y luego la de C:
+
+![perf en python](images/09.png)
+
+
+![perf en C](images/10.png)
+
+Como se puede observar, ocurre algo inesperado ya que la funcion realizada con python se esta ejecutando mas rapido que la de C
+lo cual en principio no deberia pasar. 
+
+Sin embargo luego de investigar, concluimos que esto ocurra debido al overhead que existe llamando a Ctypes, lo cual por detras utiliza muchas librerias y metodos mas. En cambio
+con python esto no ocurre, ya que es mucho mas directo. 
+
+Ademas, el trabajo matematico que debe hacer C es casi nulo por lo que python esta bien optimizado para ese tipo de calculos tan simples.
 
