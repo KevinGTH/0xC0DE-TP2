@@ -1,14 +1,14 @@
 import requests
 import ctypes
+from gini_lib_client import MyClient
 
 
 class GiniAPIClient:
     def __init__(self, api_url):
         self.api_url = api_url
+
         try:
-            self.gini_lib = ctypes.CDLL("./libgini.so")
-            self.gini_lib.float_to_int_gini.argtypes = [ctypes.c_double]
-            self.gini_lib.float_to_int_gini.restype = ctypes.c_int
+            self.cclient = MyClient()
         except Exception as e:
             print(f"Error al cargar la biblioteca: {e}")
             exit(1)
@@ -23,7 +23,7 @@ class GiniAPIClient:
 
     def float_to_int_gini(self, gini_value):
         #Convierte un valor float a int usando una funcion definida en C
-        return self.gini_lib.float_to_int_gini(gini_value)
+        return self.cclient.float_to_int_gini(gini_value)
 
     @staticmethod
     def country_validation(data, target_country):

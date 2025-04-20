@@ -89,4 +89,4 @@ class GUI:
             int_gini = self.api_client.float_to_int_gini(gini_value)
             self.result_label.config(text=f"Índice GINI del país '{self.current_country.get().capitalize()}' en el año {self.selected_year.get()}:\n"
                                           f"Valor: {gini_value:.2f}\n"
-                                          f"Valor entero truncado con C: {str(int_gini)}")
+                                          f"Valor entero (redondeado+1) con Assembler: {str(int_gini)}")
